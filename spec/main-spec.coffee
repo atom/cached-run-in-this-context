@@ -11,6 +11,11 @@ describe "cached runInThisContext", ->
       require("vm").runInThisContext(fn, "filename-1")(1, 2, 3)
     ).toBe main.runInThisContext(fn, "filename-1").result(1, 2, 3)
 
+  it "throws an exception when the code is not valid", ->
+    fn = "(function(a, b, c) { an arbitrary error @$%^* })"
+
+    expect(-> main.runInThisContext(fn, "file-with-errors")).toThrow()
+
   it "returns a cache that can be used to speed up future compilations", ->
     fn = "(function(a, b, c) { return a; })"
 
