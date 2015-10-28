@@ -2,7 +2,7 @@
   "main": "./lib/main.js",
   "name": "cached-run-in-this-context",
   "description": "Watch files and directories for changes",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "licenses": [
     {
       "type": "MIT",
