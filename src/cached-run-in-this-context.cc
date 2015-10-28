@@ -15,7 +15,6 @@ namespace CustomRunInThisContext {
   using v8::Value;
 
   static void RunInThisContextCached(const FunctionCallbackInfo<Value>& args) {
-    Nan::TryCatch try_catch;
     Local<String> code = args[0]->ToString(args.GetIsolate());
     Local<String> filename = args[1]->ToString(args.GetIsolate());
     Local<Object> bufferObj = args[2]->ToObject();
@@ -28,17 +27,8 @@ namespace CustomRunInThisContext {
     Local<UnboundScript> unbound_script =
         ScriptCompiler::CompileUnbound(args.GetIsolate(), &source, ScriptCompiler::CompileOptions::kConsumeCodeCache);
 
-    if (unbound_script.IsEmpty()) {
-      try_catch.ReThrow();
-      return;
-    }
-
     Local<Script> script = unbound_script->BindToCurrentContext();
     Local<Value> result = script->Run();
-    if (result.IsEmpty()) {
-      try_catch.ReThrow();
-      return;
-    }
 
     Local<Object> returnValue = Nan::New<v8::Object>();
     Nan::Set(returnValue, Nan::New("result").ToLocalChecked(), result);
