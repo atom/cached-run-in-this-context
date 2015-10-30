@@ -1,7 +1,7 @@
 {
   "main": "./lib/main.js",
   "name": "cached-run-in-this-context",
-  "description": "Watch files and directories for changes",
+  "description": "An alternative to vm.runInThisContext that allows to pass a cache to speed up future compilations.",
   "version": "0.3.0",
   "licenses": [
     {
