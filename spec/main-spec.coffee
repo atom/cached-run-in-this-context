@@ -25,12 +25,32 @@ describe "cached runInThisContext", ->
     expect(nonCached.result(1)).toBe(cached.result(1))
     expect(cached.wasRejected).toBe(false)
 
-  it "rejects the cache when it doesn't match the supplied source code", ->
+  it "rejects the cache when the provided buffer is invalid", ->
     fn = "(function(a, b, c) { return a + b; })"
 
     cached = main.runInThisContextCached(fn, "filename", new Buffer("invalid cache"))
 
     expect(cached.result(10, 20)).toBe(30)
+    expect(cached.wasRejected).toBe(true)
+
+  it "runs the cached function when compiling a function that is similar to the cached one", ->
+    fn1 = "(function(a, b, c) { return c + a; })"
+    fn2 = "(function(a, b, c) { return b + a; })"
+
+    {cacheBuffer} = main.runInThisContext(fn1, "filename")
+    cached = main.runInThisContextCached(fn2, "filename", cacheBuffer)
+
+    expect(cached.result(10, 20, 30)).toBe(40)
+    expect(cached.wasRejected).toBe(false)
+
+  it "rejects the cache when compiling a function that is not sufficiently similar to the cached one", ->
+    fn1 = "(function() { return 50; })"
+    fn2 = "(function(a, b, c) { return a + c; })"
+
+    {cacheBuffer} = main.runInThisContext(fn1, "filename")
+    cached = main.runInThisContextCached(fn2, "filename", cacheBuffer)
+
+    expect(cached.result(10, 20, 30)).toBe(40)
     expect(cached.wasRejected).toBe(true)
 
   it "doesn't return a cache when the same function gets run 3 or more times within the same context", ->
