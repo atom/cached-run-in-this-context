@@ -32,6 +32,7 @@ describe('cached runInThisContext', () => {
     const nonCached = main.runInThisContext(fn, 'filename-2')
     const cached = main.runInThisContextCached(fn, 'filename-2', nonCached.cacheBuffer)
 
+    expect(nonCached.cacheBuffer).not.toBe(null)
     expect(nonCached.result(1)).toBe(cached.result(1))
     expect(cached.wasRejected).toBe(false)
   })

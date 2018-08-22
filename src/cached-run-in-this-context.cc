@@ -16,11 +16,21 @@ namespace CustomRunInThisContext {
   using v8::MaybeLocal;
 
   static void RunInThisContextCached(const FunctionCallbackInfo<Value>& args) {
+    if (!args[0]->IsString() || !args[1]->IsString()) {
+      Nan::ThrowTypeError("Filename and script must be strings");
+      return;
+    }
+
     Local<String> code = args[0]->ToString(args.GetIsolate());
     Local<String> filename = args[1]->ToString(args.GetIsolate());
-    Local<Object> bufferObj = args[2]->ToObject();
-    uint8_t* bufferData = reinterpret_cast<uint8_t*>(node::Buffer::Data(bufferObj));
-    size_t bufferLength = node::Buffer::Length(bufferObj);
+
+    uint8_t *bufferData = nullptr;
+    size_t bufferLength = 0;
+    if (args[2]->IsObject()) {
+      Local<Object> bufferObj = args[2]->ToObject();
+      bufferData = reinterpret_cast<uint8_t*>(node::Buffer::Data(bufferObj));
+      bufferLength = node::Buffer::Length(bufferObj);
+    }
 
     auto cachedData = new ScriptCompiler::CachedData(bufferData, bufferLength);
     ScriptOrigin origin(filename);
@@ -49,6 +59,11 @@ namespace CustomRunInThisContext {
   }
 
   static void RunInThisContext(const FunctionCallbackInfo<Value>& args) {
+    if (!args[0]->IsString() || !args[1]->IsString()) {
+      Nan::ThrowTypeError("Filename and script must be strings");
+      return;
+    }
+
     Local<String> code = args[0]->ToString(args.GetIsolate());
     Local<String> filename = args[1]->ToString(args.GetIsolate());
     ScriptOrigin origin(filename);
