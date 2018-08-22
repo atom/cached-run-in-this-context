@@ -58,13 +58,4 @@ describe('cached runInThisContext', () => {
     expect(cached.result(10, 20, 30)).toBe(40)
     expect(cached.wasRejected).toBe(true)
   })
-
-  it("doesn't return a cache when the same function gets run 3 or more times within the same context", () => {
-    // this spec documents what seems like a v8 optimization
-    const fn = '(function(a, b, c) { return 42; })'
-
-    expect(main.runInThisContext(fn, 'file').cacheBuffer).toBeTruthy()
-    expect(main.runInThisContext(fn, 'file').cacheBuffer).toBeTruthy()
-    expect(main.runInThisContext(fn, 'file').cacheBuffer).toBeFalsy()
-  })
 })
