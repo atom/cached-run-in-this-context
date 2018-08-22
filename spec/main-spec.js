@@ -15,7 +15,15 @@ describe('cached runInThisContext', () => {
   it('throws an exception when the code is not valid', () => {
     const fn = '(function(a, b, c) { an arbitrary error @$%^* })'
 
-    expect(() => main.runInThisContext(fn, 'file-with-errors')).toThrow()
+    expect(() => main.runInThisContext(fn, 'file-with-errors')).toThrow('Unexpected identifier')
+    expect(() => main.runInThisContextCached(fn, 'file-with-errors', new Buffer(''))).toThrow('Unexpected identifier')
+  })
+
+  it('throws an exception when the code throws an exception', () => {
+    const code = 'throw new Error("Oops");'
+
+    expect(() => main.runInThisContext(code, 'file-with-errors')).toThrow('Oops')
+    expect(() => main.runInThisContextCached(code, 'file-with-errors', new Buffer(''))).toThrow('Oops')
   })
 
   it('returns a cache that can be used to speed up future compilations', () => {
