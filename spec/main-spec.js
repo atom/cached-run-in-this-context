@@ -16,14 +16,14 @@ describe('cached runInThisContext', () => {
     const fn = '(function(a, b, c) { an arbitrary error @$%^* })'
 
     expect(() => main.runInThisContext(fn, 'file-with-errors')).toThrow('Unexpected identifier')
-    expect(() => main.runInThisContextCached(fn, 'file-with-errors', new Buffer(''))).toThrow('Unexpected identifier')
+    expect(() => main.runInThisContextCached(fn, 'file-with-errors', Buffer.from(''))).toThrow('Unexpected identifier')
   })
 
   it('throws an exception when the code throws an exception', () => {
     const code = 'throw new Error("Oops");'
 
     expect(() => main.runInThisContext(code, 'file-with-errors')).toThrow('Oops')
-    expect(() => main.runInThisContextCached(code, 'file-with-errors', new Buffer(''))).toThrow('Oops')
+    expect(() => main.runInThisContextCached(code, 'file-with-errors', Buffer.from(''))).toThrow('Oops')
   })
 
   it('returns a cache that can be used to speed up future compilations', () => {
@@ -39,7 +39,7 @@ describe('cached runInThisContext', () => {
   it('rejects the cache when the provided buffer is invalid', () => {
     const fn = '(function(a, b, c) { return a + b; })'
 
-    const cached = main.runInThisContextCached(fn, 'filename', new Buffer('invalid cache'))
+    const cached = main.runInThisContextCached(fn, 'filename', Buffer.from('invalid cache'))
 
     expect(cached.result(10, 20)).toBe(30)
     expect(cached.wasRejected).toBe(true)
