@@ -1,4 +1,4 @@
-const main = require('..')
+const main = require('../src/main')
 const vm = require('vm')
 
 describe('cached runInThisContext', () => {
@@ -43,17 +43,6 @@ describe('cached runInThisContext', () => {
 
     expect(cached.result(10, 20)).toBe(30)
     expect(cached.wasRejected).toBe(true)
-  })
-
-  it('runs the cached function when compiling a function that is similar to the cached one', () => {
-    const fn1 = '(function(a, b, c) { return c + a; })'
-    const fn2 = '(function(a, b, c) { return b + a; })'
-
-    const {cacheBuffer} = main.runInThisContext(fn1, 'filename')
-    const cached = main.runInThisContextCached(fn2, 'filename', cacheBuffer)
-
-    expect(cached.result(10, 20, 30)).toBe(40)
-    expect(cached.wasRejected).toBe(false)
   })
 
   it('rejects the cache when compiling a function that is not sufficiently similar to the cached one', () => {
