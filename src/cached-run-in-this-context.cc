@@ -13,6 +13,7 @@ namespace CustomRunInThisContext {
   using v8::TryCatch;
   using v8::UnboundScript;
   using v8::Value;
+  using v8::MaybeLocal;
 
   static void RunInThisContextCached(const FunctionCallbackInfo<Value>& args) {
     Local<String> code = args[0]->ToString(args.GetIsolate());
@@ -24,11 +25,22 @@ namespace CustomRunInThisContext {
     auto cachedData = new ScriptCompiler::CachedData(bufferData, bufferLength);
     ScriptOrigin origin(filename);
     ScriptCompiler::Source source(code, origin, cachedData);
-    Local<UnboundScript> unbound_script =
-        ScriptCompiler::CompileUnbound(args.GetIsolate(), &source, ScriptCompiler::CompileOptions::kConsumeCodeCache);
+    MaybeLocal<UnboundScript> maybe_unbound_script = ScriptCompiler::CompileUnboundScript(
+      args.GetIsolate(),
+      &source,
+      ScriptCompiler::CompileOptions::kConsumeCodeCache
+    );
 
+    Local<UnboundScript> unbound_script;
+    if (!maybe_unbound_script.ToLocal(&unbound_script)) return;
+
+    Nan::TryCatch try_catch;
     Local<Script> script = unbound_script->BindToCurrentContext();
     Local<Value> result = script->Run();
+    if (result.IsEmpty()) {
+      try_catch.ReThrow();
+      return;
+    }
 
     Local<Object> returnValue = Nan::New<v8::Object>();
     Nan::Set(returnValue, Nan::New("result").ToLocalChecked(), result);
@@ -37,19 +49,21 @@ namespace CustomRunInThisContext {
   }
 
   static void RunInThisContext(const FunctionCallbackInfo<Value>& args) {
-    Nan::TryCatch try_catch;
     Local<String> code = args[0]->ToString(args.GetIsolate());
     Local<String> filename = args[1]->ToString(args.GetIsolate());
     ScriptOrigin origin(filename);
     ScriptCompiler::Source source(code, origin);
-    Local<UnboundScript> unbound_script =
-        ScriptCompiler::CompileUnbound(args.GetIsolate(), &source, ScriptCompiler::CompileOptions::kProduceCodeCache);
+    MaybeLocal<UnboundScript> maybe_unbound_script = ScriptCompiler::CompileUnboundScript(
+      args.GetIsolate(),
+      &source,
+      ScriptCompiler::CompileOptions::kProduceCodeCache
+    );
 
-    if (unbound_script.IsEmpty()) {
-      try_catch.ReThrow();
-      return;
-    }
+    Local<UnboundScript> unbound_script;
+    if (!maybe_unbound_script.ToLocal(&unbound_script)) return;
+    if (unbound_script.IsEmpty()) return;
 
+    Nan::TryCatch try_catch;
     Local<Script> script = unbound_script->BindToCurrentContext();
     Local<Value> result = script->Run();
     if (result.IsEmpty()) {
