@@ -2,13 +2,6 @@ language: node_js
 
 sudo: false
 
-addons:
-  apt:
-    sources:
-    - ubuntu-toolchain-r-test
-    packages:
-    - g++-4.8
-
 git:
   depth: 10
 
@@ -17,7 +10,7 @@ node_js:
  - 8
 
 env:
-  - CC=gcc-4.8 CXX=g++-4.8
+  - CXX=clang++
 
 branches:
   only:
