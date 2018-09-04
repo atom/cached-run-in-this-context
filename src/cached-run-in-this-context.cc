@@ -87,9 +87,19 @@ namespace CustomRunInThisContext {
     }
 
     Local<Value> cacheBuffer = Nan::Null();
-    if (source.GetCachedData() && source.GetCachedData()->data) {
-      cacheBuffer = Nan::CopyBuffer(reinterpret_cast<const char*>(source.GetCachedData()->data), source.GetCachedData()->length).ToLocalChecked();
-    }
+
+    #if V8_MAJOR_VERSION == 6 && V8_MINOR_VERSION >= 7
+      const ScriptCompiler::CachedData *data = ScriptCompiler::CreateCodeCache(unbound_script);
+      if (data) {
+        cacheBuffer = Nan::CopyBuffer(reinterpret_cast<const char*>(data->data), data->length).ToLocalChecked();
+        delete data;
+      }
+    #else
+      const ScriptCompiler::CachedData *data = source.GetCachedData();
+      if (data) {
+        cacheBuffer = Nan::CopyBuffer(reinterpret_cast<const char*>(data->data), data->length).ToLocalChecked();
+      }
+    #endif
 
     Local<Object> returnValue = Nan::New<v8::Object>();
     Nan::Set(returnValue, Nan::New("cacheBuffer").ToLocalChecked(), cacheBuffer);
